@@ -1,0 +1,31 @@
+version: 1
+disable_existing_loggers: no
+formatters:
+  console_formatter_consumer:
+    (): consumer.logger.ConsoleFormatter
+    format: '[%(asctime)s] #%(levelname)-8s %(filename)s: %(lineno)d - %(name)s - %(message)s'
+  console_formatter_backend:
+    (): src.logger.ConsoleFormatter
+    format: '[%(asctime)s] #%(levelname)-8s %(filename)s: %(lineno)d - %(name)s - %(message)s'
+handlers:
+  console_handler_backend:
+    class: logging.StreamHandler
+    formatter: console_formatter_backend
+  console_handler_consumer:
+    class: logging.StreamHandler
+    formatter: console_formatter_consumer
+root:
+  level: INFO
+  handlers: [console_handler_backend]
+loggers:
+  'backend_logger':
+    level: INFO
+    propagate: no
+    handlers: [console_handler_backend]
+  'consumer_logger':
+    level: INFO
+    propagate: no
+    handlers: [console_handler_consumer]
+  'uvicorn':
+    level: INFO
+    propagate: yes

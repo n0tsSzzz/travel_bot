@@ -1,0 +1,47 @@
+from uuid import uuid4
+
+from asyncpg import Connection
+from sqlalchemy import NullPool
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
+
+from config.settings import settings
+from db.repository import Repository
+
+from typing_extensions import AsyncGenerator
+
+
+class CConnection(Connection):
+    def _get_unique_id(self, prefix: str) -> str:
+        return f'__asyncpg_{prefix}_{uuid4()}__'
+
+
+def create_engine() -> AsyncEngine:
+    return create_async_engine(
+        settings.db_url,
+        poolclass=NullPool,
+        connect_args={
+            'connection_class': CConnection,
+        },
+        # 'pool_recycle': 3600,
+        # 'pool_size': 5,
+        # 'pool_overflow': 10,
+    )
+
+
+def create_session(_engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
+    return async_sessionmaker(
+        bind=_engine,
+        class_=AsyncSession,
+        autoflush=False,
+        expire_on_commit=False,
+    )
+
+
+engine = create_engine()
+async_session = create_session(engine)
+
+db = Repository(async_session)
+
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with async_session() as database:
+        yield database
