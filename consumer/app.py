@@ -4,23 +4,20 @@ from typing import Any
 import aio_pika
 import msgpack
 
-
-from consumer.logger import LOGGING_CONFIG, logger, correlation_id_ctx
-from schema.base import BaseMessage
-from schema.trip import TripMessage
-# from consumer.metrics import TOTAL_RECEIVED_MESSAGES
-from schema.user import UserMessage
-from schema.item import ItemMessage, ItemQueueInitMessage
-from db.storages import rabbit
 from config.settings import settings
-
-from consumer.handlers.user import handle_event_user
 from consumer.handlers.item import handle_event_item
 from consumer.handlers.trip import handle_event_trip
+from consumer.handlers.user import handle_event_user
+from consumer.logger import LOGGING_CONFIG, correlation_id_ctx, logger
+from db.storages import rabbit
+
+# from consumer.metrics import TOTAL_RECEIVED_MESSAGES
+
+
 
 async def start_consumer() -> None:
     logging.config.dictConfig(LOGGING_CONFIG)
-    logger.info('Starting consumer...')
+    logger.info("Starting consumer...")
 
     channel: aio_pika.Channel
     async with rabbit.channel_pool.acquire() as channel:
@@ -28,7 +25,7 @@ async def start_consumer() -> None:
 
         queue = await channel.declare_queue(settings.USER_MESSAGES_QUEUE, durable=True)
 
-        logger.info('Consumer started!')
+        logger.info("Consumer started!")
         async with queue.iterator() as queue_iter:
             async for message in queue_iter: # type: aio_pika.abc.AbstractIncomingMessage
                 # TOTAL_RECEIVED_MESSAGES.inc()
@@ -40,11 +37,11 @@ async def start_consumer() -> None:
 
 
                 try:
-                    if body.get('event') == 'users':
+                    if body.get("event") == "users":
                         await handle_event_user(body)
-                    elif body.get('event') == 'items':
+                    elif body.get("event") == "items":
                         await handle_event_item(body)
-                    elif body.get('event') == 'trip':
+                    elif body.get("event") == "trip":
                         await handle_event_trip(body)
 
                     await message.ack()

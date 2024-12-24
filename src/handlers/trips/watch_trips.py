@@ -1,41 +1,19 @@
 import msgpack
-from aio_pika.exceptions import QueueEmpty
-from aiogram import F, Bot
+from aiogram import Bot, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.methods import EditMessageText
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from starlette_context import context
 from starlette_context.header_keys import HeaderKeys
 
-from schema.trip import TripQueueInitMessage, TripDeleteMessage
-from src.keyboards.trips_kb import trips_menu_kb
-from src.lexicon.lexicon_ru import LEXICON_RU, ERROR_LEXICON_RU
-from src.keyboards.items_kb import item_create_break_kb, item_create_kb
-from src.keyboards.menu_kb import start_kb
-from src.handlers.router import router
-
-from aiogram.exceptions import TelegramBadRequest
-
-from src.handlers.utils.validator import check_valid_title
-
-from src.states.item import CreateItemForm
-
-import aio_pika
-from aio_pika import ExchangeType
-from db.storages.rabbit import channel_pool
-from msgpack import packb
-from schema.item import ItemMessage
 from config.settings import settings
-
-import logging
-
-from aiogram.exceptions import TelegramBadRequest, TelegramAPIError
-from src.handlers.utils.watching import watch_user_trips
-
-from src.logger import logger, correlation_id_ctx
-
 from db.storages.rabbit import rmq
-
+from schema.trip import TripDeleteMessage, TripQueueInitMessage
+from src.handlers.router import router
+from src.handlers.utils.watching import watch_user_trips
+from src.keyboards.trips_kb import trips_menu_kb
+from src.lexicon.lexicon_ru import ERROR_LEXICON_RU, LEXICON_RU
+from src.logger import correlation_id_ctx, logger
 
 
 @router.callback_query(F.data == "trips_mine", F.message.as_("message"))
@@ -54,8 +32,8 @@ async def usr_trips_watch_hand(
 
     trip = TripQueueInitMessage(
                 user_id=callback.from_user.id,
-                event='trip',
-                action='get_trips',
+                event="trip",
+                action="get_trips",
             )
 
     correlation_id = context.get(HeaderKeys.correlation_id) or ""
@@ -68,7 +46,7 @@ async def usr_trips_watch_hand(
         if trips.correlation_id is not None:
             correlation_id_ctx.set(trips.correlation_id)
         parsed_trips = msgpack.unpackb(trips.body)
-        logger.info('get trips %s', parsed_trips)
+        logger.info("get trips %s", parsed_trips)
 
         await state.update_data(usr_trips=parsed_trips, current_trip=0)
 
@@ -77,7 +55,7 @@ async def usr_trips_watch_hand(
     await state.clear()
     await state.update_data(origin_msg=origin_msg)
     try:
-        await message.edit_text(ERROR_LEXICON_RU['no_trips'], reply_markup=trips_menu_kb())
+        await message.edit_text(ERROR_LEXICON_RU["no_trips"], reply_markup=trips_menu_kb())
         return
     except TelegramBadRequest:
         pass
@@ -123,8 +101,8 @@ async def delete_trip_hand(callback: CallbackQuery, state: FSMContext, message: 
     trip_id = data["usr_trips"]["trips"][data["current_trip"]]["id"]
     trip = TripDeleteMessage(
         trip_id=trip_id,
-        event='trip',
-        action='delete_trip'
+        event="trip",
+        action="delete_trip"
     )
 
     correlation_id = context.get(HeaderKeys.correlation_id) or ""

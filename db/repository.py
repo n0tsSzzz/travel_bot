@@ -1,22 +1,17 @@
 import logging
+from typing import Any, Callable
 
-from aiormq.tools import awaitable
-from sqlalchemy import select, insert, update, delete
-from sqlalchemy.ext.asyncio import async_sessionmaker
-
-from typing import Callable, Any
-from sqlalchemy.exc import DBAPIError
-
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.engine.result import ChunkedIteratorResult
+from sqlalchemy.exc import DBAPIError
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from db.models import User, Item, Trip
-from schema.item import ItemMessage
+from db.models import Item, Trip, User
 
 logger = logging.getLogger(__name__)
 
 class Repository:
-    __slots__ = ('_session_pool',)
+    __slots__ = ("_session_pool",)
 
     def __init__(self, pool: async_sessionmaker[AsyncSession]):
         self._session_pool = pool
@@ -33,7 +28,7 @@ class Repository:
                 await session.commit()
                 return res
             except DBAPIError as e:
-                logger.error(f'Db error: {e}')
+                logger.error(f"Db error: {e}")
                 await session.rollback()
                 return None
 

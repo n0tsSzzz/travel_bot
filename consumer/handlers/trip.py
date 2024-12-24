@@ -1,25 +1,18 @@
 import logging.config
 from typing import Any
 
-import aio_pika
-import msgpack
-from aio_pika import ExchangeType
-from aiogram.loggers import event
-from mypy.dmypy.client import action
-
 from config.settings import settings
 from consumer.logger import LOGGING_CONFIG, correlation_id_ctx, logger
-from db.storages import rabbit
 from db.storages.postgres import db
 from db.storages.rabbit import rmq
-from schema.item import Item, ItemForTrip, ItemMessage
-from schema.trip import Trip, TripMessage, TripUser
+from schema.item import Item
+from schema.trip import Trip, TripUser
 
 logging.config.dictConfig(LOGGING_CONFIG)
 
 
 async def handle_event_trip(message: Any) -> None:
-    if message['action'] == 'trip_init':
+    if message["action"] == "trip_init":
         try:
             trip_id = await db.create_trip(title=message["title"], user_id=message["user_id"], days_needed=message["days_needed"])
             if trip_id is None:
@@ -27,14 +20,14 @@ async def handle_event_trip(message: Any) -> None:
             trip_id = trip_id.scalar()
             if not isinstance(trip_id, int):
                 raise Exception
-            logger.info('Added Trip %s into db', message)
+            logger.info("Added Trip %s into db", message)
             for item in message["items"]:
                 print(item)
                 await db.attach_item_to_trip(item["id"], trip_id)
-                logger.info('Attach Item %s to Trip %s', item, trip_id)
+                logger.info("Attach Item %s to Trip %s", item, trip_id)
         except Exception as e:
             logger.exception(e)
-    elif message['action'] == 'get_trips':
+    elif message["action"] == "get_trips":
         try:
             not_fetched_trips = await db.get_trips(message["user_id"])
             if not_fetched_trips is None:
@@ -79,13 +72,13 @@ async def handle_event_trip(message: Any) -> None:
             )
 
             await rmq.publish_message(all_trips, queue_name, correlation_id_ctx.get())
-            logger.info('added Trips %s to queue', all_trips)
+            logger.info("added Trips %s to queue", all_trips)
 
         except Exception as e:
             logger.error("Error processing message: %s", e)
-    elif message['action'] == "delete_trip":
+    elif message["action"] == "delete_trip":
         try:
-            await db.delete_trip(message['trip_id'])
-            logger.info('Delete Trip %s', message)
+            await db.delete_trip(message["trip_id"])
+            logger.info("Delete Trip %s", message)
         except Exception as e:
             logger.exception(e)

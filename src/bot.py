@@ -8,7 +8,6 @@ from db.storages.redis import redis_storage
 from src.handlers.router import router as command_router
 from src.keyboards.set_menu import set_main_menu
 
-
 storage = RedisStorage(redis=redis_storage)
 dp = Dispatcher(storage=storage)
 default = DefaultBotProperties(parse_mode=ParseMode.HTML)

@@ -1,27 +1,18 @@
-import aio_pika
-from aio_pika import Queue, ExchangeType
+import msgpack
 from aio_pika.exceptions import QueueEmpty
+from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from msgpack import packb
 from starlette_context import context
 from starlette_context.header_keys import HeaderKeys
 
-from db.storages.rabbit import channel_pool
 from config.settings import settings
-import msgpack
-
-from schema.item import ItemForTrip, Item
-from schema.trip import TripMessage
-from src.keyboards.menu_kb import start_kb
-from src.lexicon.lexicon_ru import LEXICON_RU, ERROR_LEXICON_RU
-from aiogram import Bot
-
-from src.keyboards.trips_kb import trip_items_create_kb, trip_items_create_last_kb, trips_menu_kb
-import asyncio
-
-from src.logger import logger, correlation_id_ctx
 from db.storages.rabbit import rmq
+from schema.item import Item
+from schema.trip import TripMessage
+from src.keyboards.trips_kb import trip_items_create_kb, trip_items_create_last_kb, trips_menu_kb
+from src.lexicon.lexicon_ru import LEXICON_RU
+from src.logger import correlation_id_ctx, logger
 
 
 async def select_items(update: Message | CallbackQuery, state: FSMContext, bot: Bot) -> None:
@@ -39,7 +30,7 @@ async def select_items(update: Message | CallbackQuery, state: FSMContext, bot: 
                     correlation_id_ctx.set(item.correlation_id)
                 parsed_item: Item | None = msgpack.unpackb(item.body)
                 if parsed_item is not None:
-                    logger.info('get item %s', parsed_item)
+                    logger.info("get item %s", parsed_item)
 
                     data = await state.get_data()
                     await state.update_data(choose_item=parsed_item)
@@ -69,8 +60,8 @@ async def select_items(update: Message | CallbackQuery, state: FSMContext, bot: 
                     title=data["title"],
                     days_needed=data["days_needed"],
                     items=items,
-                    event='trip',
-                    action='trip_init',
+                    event="trip",
+                    action="trip_init",
                 )
                 queue_name = settings.USER_MESSAGES_QUEUE
                 await rmq.publish_message(trip, queue_name, context.get(HeaderKeys.correlation_id) or "")

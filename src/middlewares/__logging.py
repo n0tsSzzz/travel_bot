@@ -1,10 +1,9 @@
 import logging
-from typing import Awaitable, Any, Callable, Union
+from typing import Any, Awaitable, Callable, Union
 
 from aiogram import BaseMiddleware
-from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
-
+from aiogram.types import CallbackQuery, Message
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level=logging.INFO)
@@ -20,7 +19,7 @@ class LoggingMiddleware(BaseMiddleware):
         user_id: int = event.from_user.id if isinstance(event, CallbackQuery) else event.chat.id
         user_name: str = event.from_user.full_name if event.from_user else "Unknown User"
         user_message = event.data if isinstance(event, CallbackQuery) else event.text
-        state: FSMContext = data['state']
+        state: FSMContext = data["state"]
         state_data: dict[str, Any] = await state.get_data()
 
         logger.info(
@@ -33,4 +32,3 @@ class LoggingMiddleware(BaseMiddleware):
         )
 
         await handler(event, data)
-

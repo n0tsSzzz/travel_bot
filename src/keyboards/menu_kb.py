@@ -1,19 +1,12 @@
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
-from aiogram.types import (
-    ReplyKeyboardMarkup,
-    KeyboardButton,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-)
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from src.lexicon.lexicon_ru import KB_LEXICON_RU
 
-def start_kb() -> InlineKeyboardMarkup:
-    """
-    Build a starting keyboard.
-    """
 
+def start_kb() -> InlineKeyboardMarkup:
     kb_builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
+
     kb_builder.row(
         InlineKeyboardButton(
             text=KB_LEXICON_RU["item_create"],

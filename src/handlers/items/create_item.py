@@ -1,32 +1,19 @@
-from aiogram import F, Bot
+from aiogram import Bot, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from starlette_context import context
 from starlette_context.header_keys import HeaderKeys
 
-from src.lexicon.lexicon_ru import LEXICON_RU, ERROR_LEXICON_RU
-from src.keyboards.items_kb import item_create_break_kb, item_create_kb
-from src.keyboards.menu_kb import start_kb
-from src.handlers.router import router
-
-from src.handlers.utils.validator import check_valid_title
-
-from src.states.item import CreateItemForm
-
-from src.logger import correlation_id_ctx
-
-import aio_pika
-from aio_pika import ExchangeType
-from db.storages.rabbit import channel_pool
-from msgpack import packb
-from schema.item import ItemMessage
 from config.settings import settings
-
-import logging
-
-from aiogram.exceptions import TelegramBadRequest
-
 from db.storages.rabbit import rmq
+from schema.item import ItemMessage
+from src.handlers.router import router
+from src.handlers.utils.validator import check_valid_title
+from src.keyboards.items_kb import item_create_break_kb
+from src.keyboards.menu_kb import start_kb
+from src.lexicon.lexicon_ru import LEXICON_RU
+from src.states.item import CreateItemForm
 
 
 @router.callback_query(F.data == "item_create", F.message.as_("message"))
@@ -61,10 +48,10 @@ async def item_title_hand(message: Message, state: FSMContext, bot: Bot, text: s
     data.update(title=title)
 
     item = ItemMessage(
-        title=data['title'],
+        title=data["title"],
         user_id=user_id,
-        event='items',
-        action='item_create',
+        event="items",
+        action="item_create",
     )
 
     queue_name = settings.USER_MESSAGES_QUEUE

@@ -1,1 +1,1 @@
-from . import menu, items, trips
+from . import items, menu, trips

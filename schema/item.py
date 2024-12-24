@@ -1,5 +1,7 @@
-from .base import BaseMessage
 from typing import TypedDict
+
+from .base import BaseMessage
+
 
 class Item(TypedDict):
     id: int

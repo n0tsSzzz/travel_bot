@@ -2,7 +2,6 @@ import aio_pika
 import msgpack
 from aio_pika import ExchangeType
 from aiogram.types import CallbackQuery
-from msgpack import packb
 
 from config.settings import settings
 from db.storages.rabbit import channel_pool
@@ -26,8 +25,8 @@ async def load_queue(callback: CallbackQuery) -> None:
             aio_pika.Message(msgpack.packb(
                 ItemQueueInitMessage(
                     user_id=callback.from_user.id,
-                    event='items',
-                    action='get_items',
+                    event="items",
+                    action="get_items",
                 )
             )),
         queue_name)

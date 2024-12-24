@@ -1,21 +1,14 @@
 import asyncio
-from pyexpat.errors import messages
+import logging
+from typing import Any
 
 import aio_pika
-import msgpack
-from aio_pika import ExchangeType
+from aio_pika import Channel, ExchangeType
 from aio_pika.abc import AbstractIncomingMessage
-from aiogram.types import CallbackQuery
+from aio_pika.pool import Pool
 from msgpack import packb
 
 from config.settings import settings
-from schema.item import ItemQueueInitMessage
-import logging
-from aio_pika.pool import Pool
-from aio_pika import Channel
-
-from typing import Any
-
 
 logger = logging.getLogger(__name__)
 

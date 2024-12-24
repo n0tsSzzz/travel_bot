@@ -1,24 +1,17 @@
-import aio_pika
-import msgpack
-from aio_pika import ExchangeType
-from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove, CallbackQuery
-from aiogram import html, F, Bot
+from aiogram import F
+from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
 from starlette_context import context
 from starlette_context.header_keys import HeaderKeys
 
+from config.settings import settings
+from db.storages.rabbit import rmq
 from schema.user import UserMessage
-from .router import router
-from db.storages.rabbit import channel_pool
-from src.handlers.utils.queue import init_queue
-
 from src.keyboards.menu_kb import start_kb
 from src.lexicon.lexicon_ru import LEXICON_RU
 
-from db.storages.rabbit import rmq
-
-from config.settings import settings
+from .router import router
 
 
 @router.message(CommandStart(), F.from_user.id.as_("user_id"), F.from_user.full_name.as_("full_name"))
@@ -32,8 +25,8 @@ async def command_start_handler(message: Message, state: FSMContext, user_id: in
     user = UserMessage(
         user_id=user_id,
         username=full_name,
-        event='users',
-        action='register',
+        event="users",
+        action="register",
     )
     queue_name = settings.USER_MESSAGES_QUEUE
     correlation_id = context.get(HeaderKeys.correlation_id) or ""
@@ -43,6 +36,6 @@ async def command_start_handler(message: Message, state: FSMContext, user_id: in
     await state.update_data(origin_msg=sent_message.message_id)
 
 
-@router.message(Command('help'))
+@router.message(Command("help"))
 async def command_help_handler(message: Message, state: FSMContext) -> None:
     ...

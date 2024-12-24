@@ -1,10 +1,8 @@
-# validator.py
 import re
 
 from src.lexicon.lexicon_ru import ERROR_LEXICON_RU
 
-
-FORBIDDEN_CHARS: tuple[str, ...] = ('_', '@', '/', "\\", '-', '+', '[', ']', '|')
+FORBIDDEN_CHARS: tuple[str, ...] = ("_", "@", "/", "\\", "-", "+", "[", "]", "|")
 
 no_numbers_regex = re.compile(r"^[^0-9]*$")
 only_digits_regex = re.compile(r"^\d+$")

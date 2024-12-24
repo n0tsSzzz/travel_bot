@@ -1,6 +1,8 @@
-from .base import BaseMessage
-from .item import ItemMessage, Item
 from typing import TypedDict
+
+from .base import BaseMessage
+from .item import Item, ItemMessage
+
 
 class TripMessage(BaseMessage):
     title: str

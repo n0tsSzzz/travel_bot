@@ -1,46 +1,23 @@
 import asyncio
 
-import msgpack
-from aiogram import F, Bot
-from aiogram.filters.callback_data import CallbackData
+from aiogram import Bot, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
-from sqlalchemy.sql.operators import from_
-from sqlalchemy.sql.selectable import SelectState
+from aiogram.types import CallbackQuery, Message
 from starlette_context import context
 from starlette_context.header_keys import HeaderKeys
 
-from schema.base import BaseMessage
-from src.bg_tasks import background_tasks
-from src.keyboards.items_kb import item_create_break_kb
-from src.lexicon.lexicon_ru import LEXICON_RU, ERROR_LEXICON_RU
-from src.keyboards.trips_kb import trips_menu_kb, trip_create_break_kb, trip_items_create_kb, TripItemCallback
-from src.keyboards.menu_kb import start_kb
-from src.handlers.router import router
-
-from src.handlers.utils.validator import check_valid_title
-from src.logger import logger, correlation_id_ctx
-
-from src.states.trip import CreateTripForm
-
-
-import aio_pika
-from aio_pika import ExchangeType
-from db.storages.rabbit import channel_pool
-from msgpack import packb, unpackb
-from schema.item import ItemMessage, ItemQueueInitMessage, ItemForTrip, Item
-from schema.trip import TripMessage, TripQueueInitMessage
 from config.settings import settings
-
-import logging
-
-from aiogram.exceptions import TelegramBadRequest
-
-from aio_pika import Queue
-
-from src.handlers.utils.select_items_for_trip import select_items
-
 from db.storages.rabbit import rmq
+from schema.item import Item, ItemQueueInitMessage
+from schema.trip import TripMessage
+from src.handlers.router import router
+from src.handlers.utils.select_items_for_trip import select_items
+from src.handlers.utils.validator import check_valid_title
+from src.keyboards.menu_kb import start_kb
+from src.keyboards.trips_kb import TripItemCallback, trip_create_break_kb, trips_menu_kb
+from src.lexicon.lexicon_ru import ERROR_LEXICON_RU, LEXICON_RU
+from src.states.trip import CreateTripForm
 
 
 @router.callback_query(F.data == "trip_create", F.message.as_("message"))
@@ -52,8 +29,8 @@ async def trip_create_hand(callback: CallbackQuery, state: FSMContext, message: 
 
     item = ItemQueueInitMessage(
                     user_id=callback.from_user.id,
-                    event='items',
-                    action='get_items',
+                    event="items",
+                    action="get_items",
                 )
 
     queue_name = settings.USER_MESSAGES_QUEUE
@@ -70,7 +47,7 @@ async def trip_create_hand(callback: CallbackQuery, state: FSMContext, message: 
     await state.clear()
     await state.update_data(origin_msg=origin_msg)
 
-    await message.edit_text(ERROR_LEXICON_RU['no_items'], reply_markup=start_kb())
+    await message.edit_text(ERROR_LEXICON_RU["no_items"], reply_markup=start_kb())
     return
 
 
@@ -106,7 +83,7 @@ async def trip_title_hand(message: Message, state: FSMContext, bot: Bot, text: s
     return
 
 
-@router.message(CreateTripForm.days, F.text.isdigit() & ~F.text.startswith('0') & (F.text.cast(int) > 0), F.text.as_("msg_text"))
+@router.message(CreateTripForm.days, F.text.isdigit() & ~F.text.startswith("0") & (F.text.cast(int) > 0), F.text.as_("msg_text"))
 async def trip_days_hand(message: Message, state: FSMContext, bot: Bot, msg_text: str) -> None:
     await message.delete()
 
@@ -144,7 +121,7 @@ async def trip_items_hand(callback: CallbackQuery, callback_data: TripItemCallba
     except KeyError:
         items = []
 
-    if callback_data.action == 'add' or callback_data.action == 'last':
+    if callback_data.action == "add" or callback_data.action == "last":
         if items:
             items.append(choose_item)
         else:
@@ -153,7 +130,7 @@ async def trip_items_hand(callback: CallbackQuery, callback_data: TripItemCallba
     await select_items(callback, state, bot)
 
 
-@router.callback_query(F.data == 'trip_finish', F.message.as_("message"))
+@router.callback_query(F.data == "trip_finish", F.message.as_("message"))
 async def trip_finish_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 
@@ -164,7 +141,7 @@ async def trip_finish_hand(callback: CallbackQuery, state: FSMContext, message: 
     except KeyError:
         await state.clear()
         await state.update_data(origin_msg=origin_msg)
-        await message.edit_text(ERROR_LEXICON_RU['no_items'], reply_markup=trips_menu_kb())
+        await message.edit_text(ERROR_LEXICON_RU["no_items"], reply_markup=trips_menu_kb())
         return
 
     trip = TripMessage(
@@ -172,8 +149,8 @@ async def trip_finish_hand(callback: CallbackQuery, state: FSMContext, message: 
         title=data["title"],
         days_needed=data["days_needed"],
         items=items,
-        event='trip',
-        action='trip_init',
+        event="trip",
+        action="trip_init",
     )
 
     queue_name = settings.USER_MESSAGES_QUEUE

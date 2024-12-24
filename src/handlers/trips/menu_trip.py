@@ -1,17 +1,11 @@
-import msgpack
-from aiogram import F, Bot
-from aiogram.filters.callback_data import CallbackData
+from aiogram import F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
-from sqlalchemy.sql.selectable import SelectState
+from aiogram.types import CallbackQuery, Message
 
-from src.bg_tasks import background_tasks
-from src.keyboards.items_kb import item_create_break_kb
-from src.lexicon.lexicon_ru import LEXICON_RU, ERROR_LEXICON_RU
-from src.keyboards.trips_kb import trips_menu_kb, trip_create_break_kb, trip_items_create_kb, TripItemCallback
-from src.keyboards.menu_kb import start_kb
 from src.handlers.router import router
-
+from src.keyboards.menu_kb import start_kb
+from src.keyboards.trips_kb import trips_menu_kb
+from src.lexicon.lexicon_ru import LEXICON_RU
 
 
 @router.callback_query(F.data == "trips_menu", F.message.as_("message"))

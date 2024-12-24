@@ -1,31 +1,21 @@
-from aiogram.loggers import event
-
-from db.storages.postgres import db
-from schema.item import ItemMessage, ItemForTrip, Item
-
 import logging.config
-from consumer.logger import LOGGING_CONFIG, logger, correlation_id_ctx
-
-import aio_pika
-from aio_pika import ExchangeType
-import msgpack
-
-from db.storages import rabbit
-
-from db.storages.rabbit import rmq
 
 from config.settings import settings
+from consumer.logger import LOGGING_CONFIG, correlation_id_ctx, logger
+from db.storages.postgres import db
+from db.storages.rabbit import rmq
+from schema.item import Item, ItemMessage
 
 logging.config.dictConfig(LOGGING_CONFIG)
 
 async def handle_event_item(message: ItemMessage) -> None:
-    if message['action'] == 'item_create':
+    if message["action"] == "item_create":
         try:
             await db.create_item(title=message["title"], user_id=message["user_id"])
-            logger.info('Added Item %s into db', message)
+            logger.info("Added Item %s into db", message)
         except Exception as e:
             logger.exception(e)
-    elif message['action'] == 'get_items':
+    elif message["action"] == "get_items":
         try:
             not_fetched = await db.get_items(message["user_id"])
             if not_fetched is None:
@@ -45,7 +35,7 @@ async def handle_event_item(message: ItemMessage) -> None:
                 )
 
                 await rmq.publish_message(item, queue_name, correlation_id_ctx.get())
-                logger.info('added Item %s to queue', item)
+                logger.info("added Item %s to queue", item)
 
         except Exception as e:
             logger.error("Error processing message: %s", e)
