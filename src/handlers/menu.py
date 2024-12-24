@@ -37,5 +37,5 @@ async def command_start_handler(message: Message, state: FSMContext, user_id: in
 
 
 @router.message(Command("help"))
-async def command_help_handler(message: Message, state: FSMContext) -> None:
-    ...
+async def command_help_handler(message: Message) -> None:
+    await message.answer(LEXICON_RU["help"])

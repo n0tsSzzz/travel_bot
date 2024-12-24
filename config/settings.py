@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     BOT_TOKEN: str
     BOT_WEBHOOK_URL: str
-    
+
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
@@ -25,7 +25,6 @@ class Settings(BaseSettings):
     USER_EXCHANGE: str = "user_items"
 
     API_V1: str = "/api/v1"
-
 
     @property
     def db_url(self) -> str:

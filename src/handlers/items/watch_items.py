@@ -9,12 +9,7 @@ from src.lexicon.lexicon_ru import LEXICON_RU
 
 
 @router.callback_query(F.data == "items_mine", F.message.as_("message"))
-async def usr_items_watch_hand(
-    callback: CallbackQuery,
-    state: FSMContext,
-    bot: Bot,
-    message: Message
-) -> None:
+async def usr_items_watch_hand(callback: CallbackQuery, state: FSMContext, bot: Bot, message: Message) -> None:
     await callback.answer()
 
     user_id, data = callback.from_user.id, await state.get_data()
@@ -24,13 +19,9 @@ async def usr_items_watch_hand(
     await watch_user_items(callback, user_id, message.message_id, state, bot)
 
 
-@router.callback_query(F.data.startswith("usr_item_watch"), F.message.as_("message"), F.message.as_("callback_data"))
+@router.callback_query(F.data.startswith("usr_item_watch"), F.message.as_("message"), F.data.as_("callback_data"))
 async def item_watch_hand(
-    callback: CallbackQuery,
-    state: FSMContext,
-    bot: Bot,
-    message: Message,
-    callback_data: str
+    callback: CallbackQuery, state: FSMContext, bot: Bot, message: Message, callback_data: str
 ) -> None:
     await callback.answer()
 
@@ -49,6 +40,7 @@ async def trip_create_break_hand(callback: CallbackQuery, state: FSMContext, mes
     current_trip = data["usr_trips"]["trips"][data["current_trip"]]
     title = current_trip["title"]
     days_needed = current_trip["days_needed"]
-    await message.edit_text(text=LEXICON_RU["trip_info"].format(title=title, days_needed=days_needed),
-          reply_markup=kb_on_user_trip_watching(len(data["usr_trips"]["trips"]), data["current_trip"])
+    await message.edit_text(
+        text=LEXICON_RU["trip_info"].format(title=title, days_needed=days_needed),
+        reply_markup=kb_on_user_trip_watching(len(data["usr_trips"]["trips"]), data["current_trip"]),
     )

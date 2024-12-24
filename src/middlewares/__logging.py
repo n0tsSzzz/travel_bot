@@ -13,7 +13,7 @@ class LoggingMiddleware(BaseMiddleware):
     async def __call__(
         self,
         handler: Callable[[Union[Message, CallbackQuery], dict[str, Any]], Awaitable[Any]],
-        event: Union[Message, CallbackQuery], # type: ignore[override]
+        event: Union[Message, CallbackQuery],  # type: ignore[override]
         data: dict[str, Any],
     ) -> Any:
         user_id: int = event.from_user.id if isinstance(event, CallbackQuery) else event.chat.id
@@ -28,7 +28,7 @@ class LoggingMiddleware(BaseMiddleware):
             user_name,
             user_message,
             await state.get_state(),
-            state_data
+            state_data,
         )
 
         await handler(event, data)

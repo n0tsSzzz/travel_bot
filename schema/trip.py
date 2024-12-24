@@ -10,8 +10,10 @@ class TripMessage(BaseMessage):
     items: list[ItemMessage]
     user_id: int
 
+
 class TripQueueInitMessage(BaseMessage):
     user_id: int
+
 
 class Trip(TypedDict):
     id: int

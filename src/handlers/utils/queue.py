@@ -22,11 +22,14 @@ async def load_queue(callback: CallbackQuery) -> None:
         await channel.declare_queue(queue_name, durable=True)
 
         await exchange.publish(
-            aio_pika.Message(msgpack.packb(
-                ItemQueueInitMessage(
-                    user_id=callback.from_user.id,
-                    event="items",
-                    action="get_items",
+            aio_pika.Message(
+                msgpack.packb(
+                    ItemQueueInitMessage(
+                        user_id=callback.from_user.id,
+                        event="items",
+                        action="get_items",
+                    )
                 )
-            )),
-        queue_name)
+            ),
+            queue_name,
+        )

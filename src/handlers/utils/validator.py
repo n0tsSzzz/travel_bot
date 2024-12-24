@@ -10,7 +10,9 @@ only_digits_regex = re.compile(r"^\d+$")
 
 def check_valid_msg(text: str) -> tuple[str | None, ...]:
     if any(ch in text for ch in FORBIDDEN_CHARS):
-        return None, ERROR_LEXICON_RU["incorrect_format"] + ERROR_LEXICON_RU["prohibited_symbol"] + repr(FORBIDDEN_CHARS)
+        return None, ERROR_LEXICON_RU["incorrect_format"] + ERROR_LEXICON_RU["prohibited_symbol"] + repr(
+            FORBIDDEN_CHARS
+        )
     return text, None
 
 
@@ -19,7 +21,7 @@ def check_valid_title(text: str) -> tuple[str | None, None | str]:
     if exc_msg:
         return None, exc_msg
 
-    if not bool(no_numbers_regex.match(text)):
+    if not no_numbers_regex.match(text):
         return None, ERROR_LEXICON_RU["incorrect_format"] + ERROR_LEXICON_RU["is_digits"]
 
     if not 2 <= len(text) <= 40:
@@ -32,7 +34,7 @@ def check_valid_days(text: str) -> tuple[None | str, str | None]:
     if exc_msg:
         return None, exc_msg
 
-    if not bool(only_digits_regex.match(text)):
+    if not only_digits_regex.match(text):
         return None, ERROR_LEXICON_RU["incorrect_format"] + ERROR_LEXICON_RU["not_digit"]
 
     return text, None

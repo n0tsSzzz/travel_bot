@@ -28,10 +28,10 @@ async def trip_create_hand(callback: CallbackQuery, state: FSMContext, message: 
     origin_msg = data["origin_msg"]
 
     item = ItemQueueInitMessage(
-                    user_id=callback.from_user.id,
-                    event="items",
-                    action="get_items",
-                )
+        user_id=callback.from_user.id,
+        event="items",
+        action="get_items",
+    )
 
     queue_name = settings.USER_MESSAGES_QUEUE
     correlation_id = context.get(HeaderKeys.correlation_id) or ""
@@ -51,21 +51,16 @@ async def trip_create_hand(callback: CallbackQuery, state: FSMContext, message: 
     return
 
 
-# F == Message
 @router.message(CreateTripForm.title, F.text.as_("text"), F.from_user.id.as_("user_id"))
 async def trip_title_hand(message: Message, state: FSMContext, bot: Bot, text: str, user_id: int) -> None:
     data = await state.get_data()
-
 
     await message.delete()
     title, exc_msg = check_valid_title(text)
     try:
         if exc_msg:
             await bot.edit_message_text(
-                text=exc_msg,
-                reply_markup=trip_create_break_kb(),
-                chat_id=user_id,
-                message_id=data["origin_msg"]
+                text=exc_msg, reply_markup=trip_create_break_kb(), chat_id=user_id, message_id=data["origin_msg"]
             )
             return
     except TelegramBadRequest:
@@ -78,12 +73,14 @@ async def trip_title_hand(message: Message, state: FSMContext, bot: Bot, text: s
         text=LEXICON_RU["trip_days_create"],
         reply_markup=trip_create_break_kb(),
         chat_id=user_id,
-        message_id=data["origin_msg"]
+        message_id=data["origin_msg"],
     )
     return
 
 
-@router.message(CreateTripForm.days, F.text.isdigit() & ~F.text.startswith("0") & (F.text.cast(int) > 0), F.text.as_("msg_text"))
+@router.message(
+    CreateTripForm.days, F.text.isdigit() & ~F.text.startswith("0") & (F.text.cast(int) > 0), F.text.as_("msg_text")
+)
 async def trip_days_hand(message: Message, state: FSMContext, bot: Bot, msg_text: str) -> None:
     await message.delete()
 
@@ -104,14 +101,17 @@ async def trip_days_invalid_hand(message: Message, state: FSMContext, bot: Bot, 
             text=ERROR_LEXICON_RU["incorrect_format"] + ERROR_LEXICON_RU["days_val"],
             reply_markup=trip_create_break_kb(),
             chat_id=user_id,
-            message_id=origin_msg
+            message_id=origin_msg,
         )
+        return
     except TelegramBadRequest:
-        pass
+        return
 
 
 @router.callback_query(CreateTripForm.items, TripItemCallback.filter())
-async def trip_items_hand(callback: CallbackQuery, callback_data: TripItemCallback, state: FSMContext, bot: Bot) -> None:
+async def trip_items_hand(
+    callback: CallbackQuery, callback_data: TripItemCallback, state: FSMContext, bot: Bot
+) -> None:
     await callback.answer()
 
     data = await state.get_data()
@@ -160,6 +160,7 @@ async def trip_finish_hand(callback: CallbackQuery, state: FSMContext, message: 
     await state.clear()
     await state.update_data(origin_msg=origin_msg)
     await message.edit_text(text=LEXICON_RU["trip_finish"], reply_markup=trips_menu_kb())
+
 
 @router.callback_query(F.data == "trip_create_break", F.message.as_("message"))
 async def trip_create_break_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:

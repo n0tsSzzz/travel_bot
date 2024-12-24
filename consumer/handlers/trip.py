@@ -14,7 +14,9 @@ logging.config.dictConfig(LOGGING_CONFIG)
 async def handle_event_trip(message: Any) -> None:
     if message["action"] == "trip_init":
         try:
-            trip_id = await db.create_trip(title=message["title"], user_id=message["user_id"], days_needed=message["days_needed"])
+            trip_id = await db.create_trip(
+                title=message["title"], user_id=message["user_id"], days_needed=message["days_needed"]
+            )
             if trip_id is None:
                 raise Exception
             trip_id = trip_id.scalar()
@@ -47,20 +49,11 @@ async def handle_event_trip(message: Any) -> None:
 
                 items = []
                 for item in packed_items:
-                    item = Item(
-                        id=item.id,
-                        title=item.title,
-                        user_id=item.user_id,
-                        trip_id=item.trip_id
-                    )
+                    item = Item(id=item.id, title=item.title, user_id=item.user_id, trip_id=item.trip_id)
                     items.append(item)
 
                 trip = Trip(
-                    id=trip.id,
-                    title=trip.title,
-                    days_needed=trip.days_needed,
-                    user_id=trip.user_id,
-                    items=items
+                    id=trip.id, title=trip.title, days_needed=trip.days_needed, user_id=trip.user_id, items=items
                 )
                 trips.append(trip)
 

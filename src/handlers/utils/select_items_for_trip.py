@@ -39,15 +39,19 @@ async def select_items(update: Message | CallbackQuery, state: FSMContext, bot: 
                     if isinstance(update, Message):
                         await bot.edit_message_text(
                             text=LEXICON_RU["trip_items_create"].format(title=parsed_item["title"]),
-                            reply_markup=trip_items_create_last_kb() if quantity_messages == 0 else trip_items_create_kb(),
+                            reply_markup=(
+                                trip_items_create_last_kb() if quantity_messages == 0 else trip_items_create_kb()
+                            ),
                             chat_id=user_id,
-                            message_id=data["origin_msg"]
+                            message_id=data["origin_msg"],
                         )
                     else:
                         if isinstance(update.message, Message):
                             await update.message.edit_text(
                                 text=LEXICON_RU["trip_items_create"].format(title=parsed_item["title"]),
-                                reply_markup=trip_items_create_last_kb() if quantity_messages == 0 else trip_items_create_kb(),
+                                reply_markup=(
+                                    trip_items_create_last_kb() if quantity_messages == 0 else trip_items_create_kb()
+                                ),
                             )
                         return
             except QueueEmpty:

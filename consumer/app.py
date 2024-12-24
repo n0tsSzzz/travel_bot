@@ -14,7 +14,6 @@ from db.storages import rabbit
 # from consumer.metrics import TOTAL_RECEIVED_MESSAGES
 
 
-
 async def start_consumer() -> None:
     logging.config.dictConfig(LOGGING_CONFIG)
     logger.info("Starting consumer...")
@@ -27,14 +26,13 @@ async def start_consumer() -> None:
 
         logger.info("Consumer started!")
         async with queue.iterator() as queue_iter:
-            async for message in queue_iter: # type: aio_pika.abc.AbstractIncomingMessage
+            async for message in queue_iter:  # type: aio_pika.abc.AbstractIncomingMessage
                 # TOTAL_RECEIVED_MESSAGES.inc()
                 if message.correlation_id is not None:
                     correlation_id_ctx.set(message.correlation_id)
 
                 body: Any = msgpack.unpackb(message.body)
                 logger.info("Message: %s", body)
-
 
                 try:
                     if body.get("event") == "users":

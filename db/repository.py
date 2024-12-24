@@ -10,6 +10,7 @@ from db.models import Item, Trip, User
 
 logger = logging.getLogger(__name__)
 
+
 class Repository:
     __slots__ = ("_session_pool",)
 
@@ -18,60 +19,39 @@ class Repository:
         logging.info("Successfully connected to database!")
 
     async def _request_to_db(
-            self,
-            func: Callable[[Any, Any], Any],
-            query: Any
+        self, func: Callable[[Any, Any], Any], query: Any
     ) -> ChunkedIteratorResult[tuple[Any, ...]] | None:
         async with self._session_pool() as session:
             try:
-                res = await (getattr(session, func.__name__))(query)
+                res = await getattr(session, func.__name__)(query)
                 await session.commit()
                 return res
             except DBAPIError as e:
-                logger.error(f"Db error: {e}")
+                logger.error("Db error: %s", e)
                 await session.rollback()
                 return None
 
     async def add_user(self, user_id: int, username: str) -> None:
-        await self._request_to_db(
-            AsyncSession.execute,
-            insert(User).
-            values(
-                user_id=user_id,
-                username=username
-            )
-        )
+        await self._request_to_db(AsyncSession.execute, insert(User).values(user_id=user_id, username=username))
 
     async def user_exists(self, user_id: int) -> ChunkedIteratorResult[tuple[Any, ...]] | None:
-        return await self._request_to_db(
-            AsyncSession.scalar,
-            select(User.user_id).
-            where(User.user_id == user_id)
-        )
+        return await self._request_to_db(AsyncSession.scalar, select(User.user_id).where(User.user_id == user_id))
 
     async def create_item(
-            self,
-            title: str,
-            user_id: int,
+        self,
+        title: str,
+        user_id: int,
     ) -> None:
-        await self._request_to_db(
-            AsyncSession.execute,
-            insert(Item)
-            .values(
-                title=title,
-                user_id=user_id
-            )
-        )
+        await self._request_to_db(AsyncSession.execute, insert(Item).values(title=title, user_id=user_id))
 
     async def get_items(self, user_id: int) -> ChunkedIteratorResult[tuple[Any, ...]] | None:
         return await self._request_to_db(
-            AsyncSession.execute,
-            select(Item).
-            where(Item.user_id == user_id).
-            where(Item.trip_id.is_(None))
+            AsyncSession.execute, select(Item).where(Item.user_id == user_id).where(Item.trip_id.is_(None))
         )
 
-    async def create_trip(self, user_id: int, title: str, days_needed: int) -> ChunkedIteratorResult[tuple[Any, ...]] | None:
+    async def create_trip(
+        self, user_id: int, title: str, days_needed: int
+    ) -> ChunkedIteratorResult[tuple[Any, ...]] | None:
         return await self._request_to_db(
             AsyncSession.execute,
             insert(Trip)
@@ -80,34 +60,17 @@ class Repository:
                 title=title,
                 days_needed=days_needed,
             )
-            .returning(Trip.id)
+            .returning(Trip.id),
         )
 
     async def attach_item_to_trip(self, item_id: int, trip_id: int) -> None:
-        await self._request_to_db(
-            AsyncSession.execute,
-            update(Item).
-            where(Item.id == item_id).
-            values(trip_id=trip_id)
-        )
+        await self._request_to_db(AsyncSession.execute, update(Item).where(Item.id == item_id).values(trip_id=trip_id))
 
     async def get_trips(self, user_id: int) -> ChunkedIteratorResult[tuple[Any, ...]] | None:
-        return await self._request_to_db(
-            AsyncSession.execute,
-            select(Trip).
-            where(Trip.user_id == user_id)
-        )
+        return await self._request_to_db(AsyncSession.execute, select(Trip).where(Trip.user_id == user_id))
 
     async def get_trip_items(self, trip_id: int) -> ChunkedIteratorResult[tuple[Any, ...]] | None:
-        return await self._request_to_db(
-            AsyncSession.execute,
-            select(Item).
-            where(Item.trip_id == trip_id)
-        )
+        return await self._request_to_db(AsyncSession.execute, select(Item).where(Item.trip_id == trip_id))
 
     async def delete_trip(self, trip_id: int) -> None:
-        await self._request_to_db(
-            AsyncSession.execute,
-            delete(Trip).
-            where(Trip.id == trip_id)
-        )
+        await self._request_to_db(AsyncSession.execute, delete(Trip).where(Trip.id == trip_id))

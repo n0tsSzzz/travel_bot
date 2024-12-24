@@ -1,7 +1,5 @@
 import asyncio
 import logging
-import os
-import sys
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -16,13 +14,6 @@ from src.bg_tasks import background_tasks
 from src.bot import bot, dp
 from src.handlers.utils.queue import init_queue
 from src.logger import LOGGING_CONFIG, logger
-
-# sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-
-
-
-
 
 
 @asynccontextmanager

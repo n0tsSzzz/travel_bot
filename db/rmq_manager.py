@@ -18,13 +18,11 @@ class RMQManager:
         self._channel_pool = pool
         logging.info("Successfully connected to rabbitmq!")
 
-
     async def init_queue(self, queue_name: str) -> None:
         async with self._channel_pool.acquire() as channel:  # type: aio_pika.Channel
             exchange = await channel.declare_exchange(settings.USER_EXCHANGE, ExchangeType.TOPIC, durable=True)
             queue = await channel.declare_queue(queue_name, durable=True)
             await queue.bind(exchange, queue_name)
-
 
     async def publish_message(self, message: Any, queue_name: str, correlation_id: str) -> None:
         async with self._channel_pool.acquire() as channel:  # type: aio_pika.Channel
@@ -35,12 +33,10 @@ class RMQManager:
                 queue_name,
             )
 
-
     async def purge_queue(self, queue_name: str) -> None:
         async with self._channel_pool.acquire() as channel:  # type: aio_pika.Channel
             queue = await channel.declare_queue(queue_name, durable=True)
             await queue.purge()
-
 
     async def await_objects(self, queue_name: str) -> bool:
         async with self._channel_pool.acquire() as channel:  # type: aio_pika.Channel
@@ -52,14 +48,12 @@ class RMQManager:
                 await asyncio.sleep(0.1)
             return False
 
-
     async def get_obj(self, queue_name: str) -> AbstractIncomingMessage:
         async with self._channel_pool.acquire() as channel:  # type: aio_pika.Channel
             queue = await channel.declare_queue(queue_name, durable=True)
             obj = await queue.get()
             await obj.ack()
             return obj
-
 
     async def quantity_messages(self, queue_name: str) -> int | None:
         async with self._channel_pool.acquire() as channel:

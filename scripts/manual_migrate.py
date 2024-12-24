@@ -9,6 +9,7 @@ from src.logger import LOGGING_CONFIG, logger
 
 logging.config.dictConfig(LOGGING_CONFIG)
 
+
 async def main() -> None:
     try:
         async with engine.begin() as conn:

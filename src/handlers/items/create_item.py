@@ -36,10 +36,7 @@ async def item_title_hand(message: Message, state: FSMContext, bot: Bot, text: s
     try:
         if exc_msg:
             await bot.edit_message_text(
-                text=exc_msg,
-                reply_markup=item_create_break_kb(),
-                chat_id=user_id,
-                message_id=origin_msg
+                text=exc_msg, reply_markup=item_create_break_kb(), chat_id=user_id, message_id=origin_msg
             )
             return
     except TelegramBadRequest:
@@ -61,10 +58,7 @@ async def item_title_hand(message: Message, state: FSMContext, bot: Bot, text: s
     await state.clear()
     await state.update_data(origin_msg=origin_msg)
     await bot.edit_message_text(
-        chat_id=user_id,
-        message_id=data["origin_msg"],
-        text=LEXICON_RU["item_result"],
-        reply_markup=start_kb()
+        chat_id=user_id, message_id=data["origin_msg"], text=LEXICON_RU["item_result"], reply_markup=start_kb()
     )
 
 

@@ -9,6 +9,7 @@ class Item(TypedDict):
     user_id: int
     trip_id: int | None
 
+
 class ItemMessage(BaseMessage):
     title: str
     user_id: int

@@ -10,6 +10,7 @@ from db.rmq_manager import RMQManager
 async def get_connection() -> AbstractRobustConnection:
     return await aio_pika.connect_robust(settings.rabbit_url)
 
+
 connection_pool: Pool[AbstractRobustConnection] = Pool(get_connection, max_size=2)
 
 

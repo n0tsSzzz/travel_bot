@@ -17,24 +17,18 @@ from src.logger import correlation_id_ctx, logger
 
 
 @router.callback_query(F.data == "trips_mine", F.message.as_("message"))
-async def usr_trips_watch_hand(
-    callback: CallbackQuery,
-    state: FSMContext,
-    bot: Bot,
-    message: Message
-) -> None:
+async def usr_trips_watch_hand(callback: CallbackQuery, state: FSMContext, bot: Bot, message: Message) -> None:
     await callback.answer()
-
 
     user_id, data = callback.from_user.id, await state.get_data()
     origin_msg = data["origin_msg"]
     queue_name = settings.USER_MESSAGES_QUEUE
 
     trip = TripQueueInitMessage(
-                user_id=callback.from_user.id,
-                event="trip",
-                action="get_trips",
-            )
+        user_id=callback.from_user.id,
+        event="trip",
+        action="get_trips",
+    )
 
     correlation_id = context.get(HeaderKeys.correlation_id) or ""
     await rmq.publish_message(trip, queue_name, correlation_id)
@@ -63,12 +57,7 @@ async def usr_trips_watch_hand(
 
 @router.callback_query(F.data.startswith("usr_trip_watch"), F.message.as_("message"), F.data.as_("callback_data"))
 async def trip_watch_hand(
-    callback: CallbackQuery,
-    state: FSMContext,
-    bot: Bot,
-    message: Message,
-    callback_data: str
-
+    callback: CallbackQuery, state: FSMContext, bot: Bot, message: Message, callback_data: str
 ) -> None:
     await callback.answer()
 
@@ -99,11 +88,7 @@ async def delete_trip_hand(callback: CallbackQuery, state: FSMContext, message: 
     origin_msg = data["origin_msg"]
     queue_name = settings.USER_MESSAGES_QUEUE
     trip_id = data["usr_trips"]["trips"][data["current_trip"]]["id"]
-    trip = TripDeleteMessage(
-        trip_id=trip_id,
-        event="trip",
-        action="delete_trip"
-    )
+    trip = TripDeleteMessage(trip_id=trip_id, event="trip", action="delete_trip")
 
     correlation_id = context.get(HeaderKeys.correlation_id) or ""
     await rmq.publish_message(trip, queue_name, correlation_id)

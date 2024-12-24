@@ -21,7 +21,7 @@ def trips_menu_kb() -> InlineKeyboardMarkup:
         InlineKeyboardButton(
             text=KB_LEXICON_RU["back"],
             callback_data="menu_back",
-        )
+        ),
     )
 
     return kb_builder.as_markup()
@@ -30,18 +30,19 @@ def trips_menu_kb() -> InlineKeyboardMarkup:
 class TripItemCallback(CallbackData, prefix="trip_item"):
     action: str
 
+
 def trip_items_create_kb() -> InlineKeyboardMarkup:
     kb_builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
 
     kb_builder.row(
         InlineKeyboardButton(
             text=KB_LEXICON_RU["trip_item_add"],
-            callback_data=TripItemCallback(action = "add").pack(),
+            callback_data=TripItemCallback(action="add").pack(),
         ),
         InlineKeyboardButton(
             text=KB_LEXICON_RU["trip_item_next"],
-            callback_data=TripItemCallback(action = "next").pack(),
-        )
+            callback_data=TripItemCallback(action="next").pack(),
+        ),
     )
     kb_builder.row(
         InlineKeyboardButton(
@@ -65,7 +66,7 @@ def trip_items_create_last_kb() -> InlineKeyboardMarkup:
     kb_builder.row(
         InlineKeyboardButton(
             text=KB_LEXICON_RU["trip_item_add"],
-            callback_data=TripItemCallback(action = "last").pack(),
+            callback_data=TripItemCallback(action="last").pack(),
         )
     )
     kb_builder.row(
@@ -97,10 +98,9 @@ def trip_create_break_kb() -> InlineKeyboardMarkup:
     return kb_builder.as_markup()
 
 
-
 def kb_on_user_trip_watching(all_trips_len: int, current_num: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    two_btns_required = (0 < current_num < all_trips_len - 1)
+    two_btns_required = 0 < current_num < all_trips_len - 1
 
     if current_num == 0 and all_trips_len != 1:
         builder.button(text=KB_LEXICON_RU["next"], callback_data="usr_trip_watch:next")

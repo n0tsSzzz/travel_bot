@@ -21,9 +21,6 @@ def create_engine() -> AsyncEngine:
         connect_args={
             "connection_class": CConnection,
         },
-        # "pool_recycle": 3600,
-        # "pool_size": 5,
-        # "pool_overflow": 10,
     )
 
 
@@ -40,6 +37,7 @@ engine = create_engine()
 async_session = create_session(engine)
 
 db = Repository(async_session)
+
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session() as database:
