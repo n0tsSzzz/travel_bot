@@ -1,29 +1,11 @@
-from datetime import datetime
-
-from pydantic import BaseModel
-
+from .base import BaseMessage
 from typing import TypedDict
 
-class ItemBase(BaseModel):
-    name: str
-    days_needed: int
-    description: str | None = None
-
-
-class ItemCreate(ItemBase):
-    pass
-
-
-class Item(ItemBase):
+class Item(TypedDict):
     id: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-from .base import BaseMessage
-
+    title: str
+    user_id: int
+    trip_id: int | None
 
 class ItemMessage(BaseMessage):
     title: str

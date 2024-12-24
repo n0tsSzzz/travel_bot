@@ -2,6 +2,12 @@ import asyncio
 import logging
 from typing import AsyncGenerator
 
+import sys
+import os
+
+
+# sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 import uvicorn
 
 from contextlib import asynccontextmanager
@@ -10,12 +16,13 @@ from starlette_context import plugins
 from starlette_context.middleware import RawContextMiddleware
 
 from config.settings import settings
-from src.api.v1 import router as api_v1
 from src.api.tg.router import router as tg_router
 from src.bot import bot, dp
 
 from src.logger import LOGGING_CONFIG, logger
 from src.bg_tasks import background_tasks
+
+from src.handlers.utils.queue import init_queue
 
 
 @asynccontextmanager
@@ -25,6 +32,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     polling_task: asyncio.Task[None] | None = None
 
     wh_info = await bot.get_webhook_info()
+
+    await init_queue(settings.USER_MESSAGES_QUEUE)
+
     if settings.BOT_WEBHOOK_URL and wh_info.url != settings.BOT_WEBHOOK_URL:
         await bot.set_webhook(settings.BOT_WEBHOOK_URL)
     else:
@@ -52,7 +62,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 def create_app() -> FastAPI:
     app = FastAPI(docs_url='/swagger', lifespan=lifespan)
     app.include_router(tg_router, prefix='/tg', tags=['tg'])
-    # app.include_router(api_v1.router)
 
     app.add_middleware(RawContextMiddleware, plugins=[plugins.CorrelationIdPlugin()])
     return app

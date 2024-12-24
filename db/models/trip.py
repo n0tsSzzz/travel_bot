@@ -6,6 +6,9 @@ from datetime import datetime
 
 from db.models.meta import Base, metadata
 
+# from db.models.user import User
+# from db.models.item import Item
+
 
 class Trip(Base):
     __tablename__ = 'trips'
@@ -17,6 +20,6 @@ class Trip(Base):
     days_needed: Mapped[int] = mapped_column(Integer)
 
     user_id: Mapped[BigInteger] = mapped_column(ForeignKey("users.user_id", ondelete='CASCADE'))
-    user: Mapped["User"] = relationship(back_populates="trips")
+    user = relationship('User', back_populates="trips")
 
-    items: Mapped["Item"] = relationship(back_populates="trip")
+    items = relationship('Item', back_populates="trip")

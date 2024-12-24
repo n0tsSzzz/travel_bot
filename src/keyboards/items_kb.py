@@ -34,23 +34,21 @@ def item_create_break_kb() -> InlineKeyboardMarkup:
     return kb_builder.as_markup()
 
 
-def kb_on_user_ad_watching(all_ads_len, current_num):
+def kb_on_user_item_watching(all_items_len: int, current_num: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    two_btns_required = (0 < current_num < all_ads_len - 1)
+    two_btns_required = (0 < current_num < all_items_len - 1)
 
-    if current_num == 0 and all_ads_len != 1:
-        builder.button(text='➡️', callback_data='usr_ad_watch:next')
-    elif (current_num == all_ads_len - 1) and all_ads_len != 1:
-        builder.button(text='⬅️', callback_data='usr_ad_watch:prev')
+    if current_num == 0 and all_items_len != 1:
+        builder.button(text=KB_LEXICON_RU["next"], callback_data='usr_item_watch:next')
+    elif (current_num == all_items_len - 1) and all_items_len != 1:
+        builder.button(text=KB_LEXICON_RU["prev"], callback_data='usr_item_watch:prev')
     elif two_btns_required:
-        builder.button(text='⬅️', callback_data='usr_ad_watch:prev')
-        builder.button(text='➡️', callback_data='usr_ad_watch:next')
+        builder.button(text=KB_LEXICON_RU["prev"], callback_data='usr_item_watch:prev')
+        builder.button(text=KB_LEXICON_RU["next"], callback_data='usr_item_watch:next')
 
-    builder.button(text='🖋Изменить', callback_data='edit_ad')
-    builder.button(text='🗑Удалить', callback_data='delete_ad')
 
-    builder.button(text='В главное меню', callback_data='back-to_advertisement_menu')
-    if all_ads_len == 1:
+    builder.button(text=KB_LEXICON_RU["main_menu"], callback_data='trip_items_menu')
+    if all_items_len == 1:
         builder.adjust(2, 1)
     else:
         builder.adjust(1 + two_btns_required, 2, 1)

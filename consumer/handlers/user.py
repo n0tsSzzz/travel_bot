@@ -4,7 +4,7 @@ from schema.user import UserMessage
 import logging.config
 from consumer.logger import LOGGING_CONFIG, logger
 
-async def handle_event_user(message: UserMessage):
+async def handle_event_user(message: UserMessage) -> None:
     logging.config.dictConfig(LOGGING_CONFIG)
     if message['action'] == 'register':
         try:

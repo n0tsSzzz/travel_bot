@@ -1,5 +1,6 @@
 from .base import BaseMessage
-from .item import ItemMessage
+from .item import ItemMessage, Item
+from typing import TypedDict
 
 class TripMessage(BaseMessage):
     title: str
@@ -10,6 +11,17 @@ class TripMessage(BaseMessage):
 class TripQueueInitMessage(BaseMessage):
     user_id: int
 
+class Trip(TypedDict):
+    id: int
+    title: str
+    days_needed: int
+    items: list[Item]
+    user_id: int
 
-class TripUserMessage(BaseMessage):
-    trips: list[TripMessage]
+
+class TripUser(TypedDict):
+    trips: list[Trip]
+
+
+class TripDeleteMessage(BaseMessage):
+    trip_id: int
