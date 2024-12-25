@@ -1,10 +1,8 @@
 import msgpack
-from aiogram import Bot, F
+from aiogram import F
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from starlette_context import context
-from starlette_context.header_keys import HeaderKeys
 
 from config.settings import settings
 from db.storages.rabbit import rmq
@@ -14,9 +12,11 @@ from src.handlers.utils.watching import watch_user_trips
 from src.keyboards.trips_kb import trips_menu_kb
 from src.lexicon.lexicon_ru import ERROR_LEXICON_RU, LEXICON_RU
 from src.logger import correlation_id_ctx, get_or_create_correlation_id, logger
+from src.metrics import measure_time
 
 
 @router.callback_query(F.data == "trips_mine", F.message.as_("message"))
+@measure_time
 async def usr_trips_watch_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 
@@ -56,6 +56,7 @@ async def usr_trips_watch_hand(callback: CallbackQuery, state: FSMContext, messa
 
 
 @router.callback_query(F.data.startswith("usr_trip_watch"), F.message.as_("message"), F.data.as_("callback_data"))
+@measure_time
 async def trip_watch_hand(callback: CallbackQuery, state: FSMContext, message: Message, callback_data: str) -> None:
     await callback.answer()
 
@@ -67,6 +68,7 @@ async def trip_watch_hand(callback: CallbackQuery, state: FSMContext, message: M
 
 
 @router.callback_query(F.data == "main_menu", F.message.as_("message"))
+@measure_time
 async def trip_create_break_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 
@@ -79,6 +81,7 @@ async def trip_create_break_hand(callback: CallbackQuery, state: FSMContext, mes
 
 
 @router.callback_query(F.data == "delete_trip", F.message.as_("message"))
+@measure_time
 async def delete_trip_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 

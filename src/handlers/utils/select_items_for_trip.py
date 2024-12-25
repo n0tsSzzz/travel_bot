@@ -3,8 +3,6 @@ from aio_pika.exceptions import QueueEmpty
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from starlette_context import context
-from starlette_context.header_keys import HeaderKeys
 
 from config.settings import settings
 from db.storages.rabbit import rmq

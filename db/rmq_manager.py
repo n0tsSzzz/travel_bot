@@ -10,6 +10,7 @@ from msgpack import packb
 
 from config.settings import settings
 from src.logger import correlation_id_ctx, logger
+from src.metrics import RABBITMQ_MESSAGES_CONSUMED, RABBITMQ_MESSAGES_PRODUCED
 
 
 class RMQManager:
@@ -29,6 +30,7 @@ class RMQManager:
 
             correlation_id_ctx.set(correlation_id)
             logger.info("send obj %s to queue", message)
+            RABBITMQ_MESSAGES_PRODUCED.inc()
 
             await exchange.publish(
                 aio_pika.Message(packb(message), correlation_id=correlation_id),
@@ -54,6 +56,7 @@ class RMQManager:
         async with self._channel_pool.acquire() as channel:  # type: aio_pika.Channel
             queue = await channel.declare_queue(queue_name, durable=True)
             obj = await queue.get()
+            RABBITMQ_MESSAGES_CONSUMED.inc()
             await obj.ack()
             return obj
 

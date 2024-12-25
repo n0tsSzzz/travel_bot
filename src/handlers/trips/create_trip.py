@@ -4,8 +4,6 @@ from aiogram import Bot, F
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from starlette_context import context
-from starlette_context.header_keys import HeaderKeys
 
 from config.settings import settings
 from db.storages.rabbit import rmq
@@ -18,10 +16,12 @@ from src.keyboards.menu_kb import start_kb
 from src.keyboards.trips_kb import TripItemCallback, trip_create_break_kb, trips_menu_kb
 from src.lexicon.lexicon_ru import ERROR_LEXICON_RU, LEXICON_RU
 from src.logger import get_or_create_correlation_id
+from src.metrics import measure_time
 from src.states.trip import CreateTripForm
 
 
 @router.callback_query(F.data == "trip_create", F.message.as_("message"))
+@measure_time
 async def trip_create_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 
@@ -53,6 +53,7 @@ async def trip_create_hand(callback: CallbackQuery, state: FSMContext, message: 
 
 
 @router.message(CreateTripForm.title, F.text.as_("text"), F.from_user.id.as_("user_id"))
+@measure_time
 async def trip_title_hand(message: Message, state: FSMContext, bot: Bot, text: str, user_id: int) -> None:
     data = await state.get_data()
 
@@ -82,6 +83,7 @@ async def trip_title_hand(message: Message, state: FSMContext, bot: Bot, text: s
 @router.message(
     CreateTripForm.days, F.text.isdigit() & ~F.text.startswith("0") & (F.text.cast(int) > 0), F.text.as_("msg_text")
 )
+@measure_time
 async def trip_days_hand(message: Message, state: FSMContext, bot: Bot, msg_text: str) -> None:
     await message.delete()
 
@@ -91,6 +93,7 @@ async def trip_days_hand(message: Message, state: FSMContext, bot: Bot, msg_text
 
 
 @router.message(CreateTripForm.days, F.from_user.id.as_("user_id"))
+@measure_time
 async def trip_days_invalid_hand(message: Message, state: FSMContext, bot: Bot, user_id: int) -> None:
     await message.delete()
 
@@ -110,6 +113,7 @@ async def trip_days_invalid_hand(message: Message, state: FSMContext, bot: Bot, 
 
 
 @router.callback_query(CreateTripForm.items, TripItemCallback.filter())
+@measure_time
 async def trip_items_hand(
     callback: CallbackQuery, callback_data: TripItemCallback, state: FSMContext, bot: Bot
 ) -> None:
@@ -132,6 +136,7 @@ async def trip_items_hand(
 
 
 @router.callback_query(F.data == "trip_finish", F.message.as_("message"))
+@measure_time
 async def trip_finish_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 
@@ -166,6 +171,7 @@ async def trip_finish_hand(callback: CallbackQuery, state: FSMContext, message: 
 
 
 @router.callback_query(F.data == "trip_create_break", F.message.as_("message"))
+@measure_time
 async def trip_create_break_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 

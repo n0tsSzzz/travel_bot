@@ -6,9 +6,11 @@ from src.handlers.router import router
 from src.keyboards.menu_kb import start_kb
 from src.keyboards.trips_kb import trips_menu_kb
 from src.lexicon.lexicon_ru import LEXICON_RU
+from src.metrics import measure_time
 
 
 @router.callback_query(F.data == "trips_menu", F.message.as_("message"))
+@measure_time
 async def trips_menu_hand(callback: CallbackQuery, message: Message) -> None:
     await callback.answer()
 
@@ -16,6 +18,7 @@ async def trips_menu_hand(callback: CallbackQuery, message: Message) -> None:
 
 
 @router.callback_query(F.data == "menu_back", F.message.as_("message"))
+@measure_time
 async def trips_menu_back_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
     data = await state.get_data()

@@ -2,21 +2,20 @@ from aiogram import F
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from starlette_context import context
-from starlette_context.header_keys import HeaderKeys
 
 from config.settings import settings
-from consumer.logger import correlation_id_ctx
 from db.storages.rabbit import rmq
 from schema.user import UserMessage
 from src.keyboards.menu_kb import start_kb
 from src.lexicon.lexicon_ru import LEXICON_RU
 from src.logger import get_or_create_correlation_id
 
+from ..metrics import measure_time
 from .router import router
 
 
 @router.message(CommandStart(), F.from_user.id.as_("user_id"), F.from_user.full_name.as_("full_name"))
+@measure_time
 async def command_start_handler(message: Message, state: FSMContext, user_id: int, full_name: str) -> None:
     await state.set_state()
     await state.set_data({})
@@ -41,5 +40,6 @@ async def command_start_handler(message: Message, state: FSMContext, user_id: in
 
 
 @router.message(Command("help"))
+@measure_time
 async def command_help_handler(message: Message) -> None:
     await message.answer(LEXICON_RU["help"])

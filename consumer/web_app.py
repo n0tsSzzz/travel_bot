@@ -5,9 +5,10 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 
-# from consumer.api.tech.router import router as tech_router
+from consumer.api.tech.router import router as tech_router
 from consumer.app import start_consumer
 from consumer.logger import LOGGING_CONFIG, logger
+from consumer.middlewares.rps import RequestCountMiddleware
 
 
 @asynccontextmanager
@@ -33,5 +34,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 def create_app() -> FastAPI:
     app = FastAPI(docs_url="/swagger", lifespan=lifespan)
-    # app.include_router(tech_router, prefix="", tags=["tech"])
+    app.include_router(tech_router, prefix="/tech", tags=["tech"])
+    app.middleware("http")(RequestCountMiddleware())
     return app

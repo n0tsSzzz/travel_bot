@@ -1,8 +1,7 @@
 from typing import Any
 
-from aiogram import Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message
 
 from src.keyboards.items_kb import kb_on_user_item_watching
 from src.keyboards.trips_kb import kb_on_user_trip_watching

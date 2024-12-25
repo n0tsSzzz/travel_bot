@@ -9,9 +9,8 @@ from consumer.handlers.item import handle_event_item
 from consumer.handlers.trip import handle_event_trip
 from consumer.handlers.user import handle_event_user
 from consumer.logger import LOGGING_CONFIG, correlation_id_ctx, logger
+from consumer.metrics import RABBITMQ_MESSAGES_CONSUMED
 from db.storages import rabbit
-
-# from consumer.metrics import TOTAL_RECEIVED_MESSAGES
 
 
 async def start_consumer() -> None:
@@ -27,10 +26,10 @@ async def start_consumer() -> None:
         logger.info("Consumer started!")
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:  # type: aio_pika.abc.AbstractIncomingMessage
-                # TOTAL_RECEIVED_MESSAGES.inc()
                 if message.correlation_id is not None:
                     correlation_id_ctx.set(message.correlation_id)
 
+                RABBITMQ_MESSAGES_CONSUMED.inc()
                 body: Any = msgpack.unpackb(message.body)
                 logger.info("Message: %s", body)
 

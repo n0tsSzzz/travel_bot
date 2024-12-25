@@ -1,4 +1,4 @@
-from aiogram import Bot, F
+from aiogram import F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
@@ -6,9 +6,11 @@ from src.handlers.router import router
 from src.handlers.utils.watching import watch_user_items
 from src.keyboards.trips_kb import kb_on_user_trip_watching
 from src.lexicon.lexicon_ru import LEXICON_RU
+from src.metrics import measure_time
 
 
 @router.callback_query(F.data == "items_mine", F.message.as_("message"))
+@measure_time
 async def usr_items_watch_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 
@@ -20,6 +22,7 @@ async def usr_items_watch_hand(callback: CallbackQuery, state: FSMContext, messa
 
 
 @router.callback_query(F.data.startswith("usr_item_watch"), F.message.as_("message"), F.data.as_("callback_data"))
+@measure_time
 async def item_watch_hand(callback: CallbackQuery, state: FSMContext, message: Message, callback_data: str) -> None:
     await callback.answer()
 
@@ -31,6 +34,7 @@ async def item_watch_hand(callback: CallbackQuery, state: FSMContext, message: M
 
 
 @router.callback_query(F.data == "trip_items_menu", F.message.as_("message"))
+@measure_time
 async def trip_create_break_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 

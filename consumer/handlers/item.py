@@ -2,6 +2,7 @@ import logging.config
 
 from config.settings import settings
 from consumer.logger import LOGGING_CONFIG, correlation_id_ctx, logger
+from consumer.metrics import RABBITMQ_MESSAGES_PRODUCED
 from db.storages.postgres import db
 from db.storages.rabbit import rmq
 from schema.item import Item, ItemMessage
@@ -30,6 +31,7 @@ async def handle_event_item(message: ItemMessage) -> None:
             for item in items:
                 item = Item(id=item.id, title=item.title, user_id=item.user_id, trip_id=None)
 
+                RABBITMQ_MESSAGES_PRODUCED.inc()
                 await rmq.publish_message(item, queue_name, correlation_id_ctx.get())
                 logger.info("added Item %s to queue", item)
 

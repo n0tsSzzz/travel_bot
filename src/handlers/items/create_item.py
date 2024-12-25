@@ -2,8 +2,6 @@ from aiogram import Bot, F
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from starlette_context import context
-from starlette_context.header_keys import HeaderKeys
 
 from config.settings import settings
 from db.storages.rabbit import rmq
@@ -14,10 +12,12 @@ from src.keyboards.items_kb import item_create_break_kb
 from src.keyboards.menu_kb import start_kb
 from src.lexicon.lexicon_ru import LEXICON_RU
 from src.logger import get_or_create_correlation_id
+from src.metrics import measure_time
 from src.states.item import CreateItemForm
 
 
 @router.callback_query(F.data == "item_create", F.message.as_("message"))
+@measure_time
 async def item_create_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 
@@ -27,6 +27,7 @@ async def item_create_hand(callback: CallbackQuery, state: FSMContext, message: 
 
 
 @router.message(CreateItemForm.title, F.text.as_("text"), F.from_user.id.as_("user_id"))
+@measure_time
 async def item_title_hand(message: Message, state: FSMContext, bot: Bot, text: str, user_id: int) -> None:
     data = await state.get_data()
 
@@ -64,6 +65,7 @@ async def item_title_hand(message: Message, state: FSMContext, bot: Bot, text: s
 
 
 @router.callback_query(F.data == "item_create_break", F.message.as_("message"))
+@measure_time
 async def item_create_break_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 
