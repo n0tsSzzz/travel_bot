@@ -9,8 +9,7 @@ from aio_pika.pool import Pool
 from msgpack import packb
 
 from config.settings import settings
-
-logger = logging.getLogger(__name__)
+from src.logger import correlation_id_ctx, logger
 
 
 class RMQManager:
@@ -24,9 +23,12 @@ class RMQManager:
             queue = await channel.declare_queue(queue_name, durable=True)
             await queue.bind(exchange, queue_name)
 
-    async def publish_message(self, message: Any, queue_name: str, correlation_id: str) -> None:
+    async def publish_message(self, message: Any, queue_name: str, correlation_id: Any | None) -> None:
         async with self._channel_pool.acquire() as channel:  # type: aio_pika.Channel
             exchange = await channel.declare_exchange(settings.USER_EXCHANGE, ExchangeType.TOPIC, durable=True)
+
+            correlation_id_ctx.set(correlation_id)
+            logger.info("send obj %s to queue", message)
 
             await exchange.publish(
                 aio_pika.Message(packb(message), correlation_id=correlation_id),

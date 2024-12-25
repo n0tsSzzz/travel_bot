@@ -12,7 +12,7 @@ from schema.item import Item
 from schema.trip import TripMessage
 from src.keyboards.trips_kb import trip_items_create_kb, trip_items_create_last_kb, trips_menu_kb
 from src.lexicon.lexicon_ru import LEXICON_RU
-from src.logger import correlation_id_ctx, logger
+from src.logger import correlation_id_ctx, get_or_create_correlation_id, logger
 
 
 async def select_items(update: Message | CallbackQuery, state: FSMContext, bot: Bot) -> None:
@@ -68,7 +68,8 @@ async def select_items(update: Message | CallbackQuery, state: FSMContext, bot: 
                     action="trip_init",
                 )
                 queue_name = settings.USER_MESSAGES_QUEUE
-                await rmq.publish_message(trip, queue_name, context.get(HeaderKeys.correlation_id) or "")
+                correlation_id = get_or_create_correlation_id()
+                await rmq.publish_message(trip, queue_name, correlation_id)
 
                 await state.clear()
                 await state.update_data(origin_msg=origin_msg)

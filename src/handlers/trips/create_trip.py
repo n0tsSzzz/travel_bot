@@ -17,6 +17,7 @@ from src.handlers.utils.validator import check_valid_title
 from src.keyboards.menu_kb import start_kb
 from src.keyboards.trips_kb import TripItemCallback, trip_create_break_kb, trips_menu_kb
 from src.lexicon.lexicon_ru import ERROR_LEXICON_RU, LEXICON_RU
+from src.logger import get_or_create_correlation_id
 from src.states.trip import CreateTripForm
 
 
@@ -34,7 +35,7 @@ async def trip_create_hand(callback: CallbackQuery, state: FSMContext, message: 
     )
 
     queue_name = settings.USER_MESSAGES_QUEUE
-    correlation_id = context.get(HeaderKeys.correlation_id) or ""
+    correlation_id = get_or_create_correlation_id()
     asyncio.create_task(rmq.publish_message(item, queue_name, correlation_id))
     user_items_queue = settings.USER_ITEMS_QUEUE_TEMPLATE.format(user_id=callback.from_user.id)
     result = await rmq.await_objects(user_items_queue)
@@ -154,7 +155,9 @@ async def trip_finish_hand(callback: CallbackQuery, state: FSMContext, message: 
     )
 
     queue_name = settings.USER_MESSAGES_QUEUE
-    correlation_id = context.get(HeaderKeys.correlation_id) or ""
+    # correlation_id = context.get(HeaderKeys.correlation_id) or ""
+    correlation_id = get_or_create_correlation_id()
+
     await rmq.publish_message(trip, queue_name, correlation_id)
 
     await state.clear()

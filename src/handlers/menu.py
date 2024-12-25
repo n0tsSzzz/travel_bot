@@ -6,10 +6,12 @@ from starlette_context import context
 from starlette_context.header_keys import HeaderKeys
 
 from config.settings import settings
+from consumer.logger import correlation_id_ctx
 from db.storages.rabbit import rmq
 from schema.user import UserMessage
 from src.keyboards.menu_kb import start_kb
 from src.lexicon.lexicon_ru import LEXICON_RU
+from src.logger import get_or_create_correlation_id
 
 from .router import router
 
@@ -29,7 +31,9 @@ async def command_start_handler(message: Message, state: FSMContext, user_id: in
         action="register",
     )
     queue_name = settings.USER_MESSAGES_QUEUE
-    correlation_id = context.get(HeaderKeys.correlation_id) or ""
+
+    # correlation_id = context.get(HeaderKeys.correlation_id)
+    correlation_id = get_or_create_correlation_id()
 
     await rmq.publish_message(user, queue_name, correlation_id)
     sent_message = await message.answer(LEXICON_RU["menu"].format(user_name=full_name), reply_markup=start_kb())

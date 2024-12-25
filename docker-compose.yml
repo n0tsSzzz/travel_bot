@@ -1,22 +1,66 @@
 version: '3.8'
+name: trip_prod
 
 services:
   db:
     image: postgres:13.2
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
     ports:
-      - "1004:5432"
+      - "6969:5432"
+    command: [ "postgres", "-c", "log_statement=all", "-c", "log_destination=stderr" ]
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres", "-d", "postgres" ]
+      interval: 1s
+      retries: 20
+    env_file:
+      - config/.env.db
+
+  redis:
+    image: redis:6.2.4
+    ports:
+      - "6385:6379"
 
   rabbitmq:
     image: rabbitmq:3.13.7-management
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 15s
+      timeout: 10s
+      retries: 4
 
-  redis:
-    image: redis:6.2.4
+  alembic:
+    build:
+      context: .
+    entrypoint: [ "alembic" ]
+    command: [ "upgrade", "head" ]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  bot:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: python3 -m src.app
     ports:
-      - "6379:6379"
+      - "8000:8000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - .:/code
+
+  consumer:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    command: python3 -m consumer
+    ports:
+      - "8090:8010"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - .:/code

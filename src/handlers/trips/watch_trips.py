@@ -13,11 +13,11 @@ from src.handlers.router import router
 from src.handlers.utils.watching import watch_user_trips
 from src.keyboards.trips_kb import trips_menu_kb
 from src.lexicon.lexicon_ru import ERROR_LEXICON_RU, LEXICON_RU
-from src.logger import correlation_id_ctx, logger
+from src.logger import correlation_id_ctx, get_or_create_correlation_id, logger
 
 
 @router.callback_query(F.data == "trips_mine", F.message.as_("message"))
-async def usr_trips_watch_hand(callback: CallbackQuery, state: FSMContext, bot: Bot, message: Message) -> None:
+async def usr_trips_watch_hand(callback: CallbackQuery, state: FSMContext, message: Message) -> None:
     await callback.answer()
 
     user_id, data = callback.from_user.id, await state.get_data()
@@ -30,7 +30,7 @@ async def usr_trips_watch_hand(callback: CallbackQuery, state: FSMContext, bot: 
         action="get_trips",
     )
 
-    correlation_id = context.get(HeaderKeys.correlation_id) or ""
+    correlation_id = get_or_create_correlation_id()
     await rmq.publish_message(trip, queue_name, correlation_id)
     user_trips_queue = settings.USER_TRIPS_QUEUE_TEMPLATE.format(user_id=user_id)
 
@@ -44,7 +44,7 @@ async def usr_trips_watch_hand(callback: CallbackQuery, state: FSMContext, bot: 
 
         await state.update_data(usr_trips=parsed_trips, current_trip=0)
 
-        await watch_user_trips(callback, user_id, message.message_id, state, bot)
+        await watch_user_trips(state, message)
         return
     await state.clear()
     await state.update_data(origin_msg=origin_msg)
@@ -56,16 +56,14 @@ async def usr_trips_watch_hand(callback: CallbackQuery, state: FSMContext, bot: 
 
 
 @router.callback_query(F.data.startswith("usr_trip_watch"), F.message.as_("message"), F.data.as_("callback_data"))
-async def trip_watch_hand(
-    callback: CallbackQuery, state: FSMContext, bot: Bot, message: Message, callback_data: str
-) -> None:
+async def trip_watch_hand(callback: CallbackQuery, state: FSMContext, message: Message, callback_data: str) -> None:
     await callback.answer()
 
-    user_id, data = callback.from_user.id, await state.get_data()
+    data = await state.get_data()
     data["current_trip"] += [1, -1][callback_data.split(":")[1] == "prev"]
 
     await state.set_data(data)
-    await watch_user_trips(callback, user_id, message.message_id, state, bot, data["current_trip"])
+    await watch_user_trips(state, message, data["current_trip"])
 
 
 @router.callback_query(F.data == "main_menu", F.message.as_("message"))
@@ -90,7 +88,7 @@ async def delete_trip_hand(callback: CallbackQuery, state: FSMContext, message: 
     trip_id = data["usr_trips"]["trips"][data["current_trip"]]["id"]
     trip = TripDeleteMessage(trip_id=trip_id, event="trip", action="delete_trip")
 
-    correlation_id = context.get(HeaderKeys.correlation_id) or ""
+    correlation_id = get_or_create_correlation_id()
     await rmq.publish_message(trip, queue_name, correlation_id)
 
     await state.clear()

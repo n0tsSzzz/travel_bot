@@ -13,6 +13,7 @@ from src.handlers.utils.validator import check_valid_title
 from src.keyboards.items_kb import item_create_break_kb
 from src.keyboards.menu_kb import start_kb
 from src.lexicon.lexicon_ru import LEXICON_RU
+from src.logger import get_or_create_correlation_id
 from src.states.item import CreateItemForm
 
 
@@ -52,7 +53,7 @@ async def item_title_hand(message: Message, state: FSMContext, bot: Bot, text: s
     )
 
     queue_name = settings.USER_MESSAGES_QUEUE
-    correlation_id = context.get(HeaderKeys.correlation_id) or ""
+    correlation_id = get_or_create_correlation_id()
     await rmq.publish_message(item, queue_name, correlation_id)
 
     await state.clear()

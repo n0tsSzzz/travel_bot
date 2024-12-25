@@ -25,7 +25,9 @@ exclude =
 # PIE781: assign-and-return. Because it's too noisy
 # PIE786: Use precise exception handlers.
 # F401: imported but unused
-ignore = E203,E501,W503,W505,B008,G200,PIE781,EXE002,PIE786,F401
+# E800: Found commented out code
+# SIM910: Use
+ignore = E203,E501,W503,W505,B008,G200,PIE781,EXE002,PIE786,F401,E800,SIM910
 select = C,E,F,G,I,P,S,W,Q,T,B,B950
 per-file-ignores = __init__.py:F401
 

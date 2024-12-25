@@ -9,10 +9,10 @@ from starlette_context import plugins
 from starlette_context.middleware import RawContextMiddleware
 
 from config.settings import settings
+from db.storages.rabbit import rmq
 from src.api.tg.router import router as tg_router
 from src.bg_tasks import background_tasks
 from src.bot import bot, dp
-from src.handlers.utils.queue import init_queue
 from src.logger import LOGGING_CONFIG, logger
 
 
@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     wh_info = await bot.get_webhook_info()
 
-    await init_queue(settings.USER_MESSAGES_QUEUE)
+    await rmq.init_queue(settings.USER_MESSAGES_QUEUE)
 
     if settings.BOT_WEBHOOK_URL and wh_info.url != settings.BOT_WEBHOOK_URL:
         await bot.set_webhook(settings.BOT_WEBHOOK_URL)

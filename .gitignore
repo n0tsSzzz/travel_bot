@@ -5,6 +5,7 @@
 
 # configs
 config/.env
+config/.env.db
 
 # C extensions
 *.so
