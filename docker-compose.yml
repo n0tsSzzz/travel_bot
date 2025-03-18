@@ -30,6 +30,17 @@ services:
       timeout: 10s
       retries: 4
 
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus_config.yml"
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/etc/prometheus
+
   alembic:
     build:
       context: .

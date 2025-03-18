@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
 from config.settings import settings
-from db.storages.rabbit import rmq
+from db.storages import rabbit
 from schema.user import UserMessage
 from src.keyboards.menu_kb import start_kb
 from src.lexicon.lexicon_ru import LEXICON_RU
@@ -20,8 +20,8 @@ async def command_start_handler(message: Message, state: FSMContext, user_id: in
     await state.set_state()
     await state.set_data({})
 
-    await rmq.init_queue(settings.USER_ITEMS_QUEUE_TEMPLATE.format(user_id=user_id))
-    await rmq.init_queue(settings.USER_TRIPS_QUEUE_TEMPLATE.format(user_id=user_id))
+    await rabbit.rmq.init_queue(settings.USER_ITEMS_QUEUE_TEMPLATE.format(user_id=user_id))
+    await rabbit.rmq.init_queue(settings.USER_TRIPS_QUEUE_TEMPLATE.format(user_id=user_id))
 
     user = UserMessage(
         user_id=user_id,
@@ -34,7 +34,7 @@ async def command_start_handler(message: Message, state: FSMContext, user_id: in
     # correlation_id = context.get(HeaderKeys.correlation_id)
     correlation_id = get_or_create_correlation_id()
 
-    await rmq.publish_message(user, queue_name, correlation_id)
+    await rabbit.rmq.publish_message(user, queue_name, correlation_id)
     sent_message = await message.answer(LEXICON_RU["menu"].format(user_name=full_name), reply_markup=start_kb())
     await state.update_data(origin_msg=sent_message.message_id)
 
